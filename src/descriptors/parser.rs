@@ -3,7 +3,7 @@ use core::ptr;
 //
 use alloc::vec;
 use alloc::vec::Vec;
-use log::{debug, error, trace, warn};
+use log::{error, trace};
 use num_traits::FromPrimitive;
 
 use crate::descriptors::USBStandardDescriptorTypes;
@@ -293,7 +293,7 @@ impl RawDescriptorParser {
                         match &self.state {
                             ParserStateMachine::Config(cfg_id) => {
                                 self.state = ParserStateMachine::Inetrface(
-                                    (*cfg_id),
+                                    *cfg_id,
                                     self.peek_interface().unwrap().interface_number,
                                 );
                                 trace!("state change:{:?}", self.state);

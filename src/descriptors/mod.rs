@@ -1,8 +1,6 @@
 //TODO: Restruct code!
 use core::ptr;
 
-use alloc::{collections, vec, vec::Vec};
-
 use desc_configuration::Configuration;
 use desc_device::Device;
 use desc_endpoint::Endpoint;
@@ -12,12 +10,11 @@ use desc_str::Str;
 use desc_uvc::{
     uvc_endpoints::UVCVideoControlInterruptEndpoint,
     uvc_interfaces::{
-        UVCControlInterface, UVCControlInterfaceHeader, UVCInterface, UVCInterfaceSubclass,
-        UVCStreamingInterface,
+        UVCControlInterface, UVCInterface, UVCInterfaceSubclass, UVCStreamingInterface,
     },
     UVCDescriptorTypes,
 };
-use log::{debug, trace, warn};
+use log::trace;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 use parser::{Error, ParserMetaData};
