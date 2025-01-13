@@ -1,6 +1,11 @@
 [package]
 name = "usb-descriptor-decoder"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
+bit_field = "0.10.2"
+log = "0.4.22"
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+tock-registers = "0.9.0"
