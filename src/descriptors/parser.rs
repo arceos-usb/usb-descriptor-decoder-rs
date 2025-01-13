@@ -1,7 +1,6 @@
 use core::ptr;
 
 //
-use alloc::vec;
 use alloc::vec::Vec;
 use log::{error, trace};
 use num_traits::FromPrimitive;
@@ -146,7 +145,7 @@ impl RawDescriptorParser {
     pub fn summarize(mut self) -> TopologicalUSBDescriptorRoot {
         while self.single_state_cycle() {}
         TopologicalUSBDescriptorRoot {
-            device: vec![self.result.unwrap()],
+            device: self.result.unwrap(),
             others: self.others,
             metadata: self.metadata,
         }
