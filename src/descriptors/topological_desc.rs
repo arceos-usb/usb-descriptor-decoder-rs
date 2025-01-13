@@ -35,7 +35,7 @@ pub enum TopologicalUSBDescriptorFunction {
 }
 #[derive(Clone, Debug)]
 pub struct TopologicalUSBDescriptorRoot {
-    pub device: Vec<TopologicalUSBDescriptorDevice>,
+    pub device: TopologicalUSBDescriptorDevice,
     pub others: Vec<USBDescriptor>,
     pub metadata: ParserMetaData,
 }
