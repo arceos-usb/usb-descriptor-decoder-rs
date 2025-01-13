@@ -324,7 +324,7 @@ impl UVCControlInterface {
             UVCControlInterfaceSubclass::DESCRIPTOR_UNDEFINED => panic!("impossible"),
             UVCControlInterfaceSubclass::HEADER => Self::Header({
                 trace!("header!");
-                let len_array_nr = len - 12;
+                let _len_array_nr = len - 12;
                 UVCControlInterfaceHeader {
                     length: len.clone(),
                     descriptor_type,
@@ -348,7 +348,7 @@ impl UVCControlInterface {
                     descriptor_type,
                     descriptor_sub_type,
                     terminal_id: raw[3],
-                    terminal_type: u16::from_ne_bytes(unsafe { raw[4..=5].try_into().unwrap() }),
+                    terminal_type: u16::from_ne_bytes(raw[4..=5].try_into().unwrap()),
                     associated_terminal: raw[6],
                     string_index_terminal: raw[7],
                     reserved: raw[8..(len as usize)].to_vec(),
@@ -360,7 +360,7 @@ impl UVCControlInterface {
                     descriptor_type,
                     descriptor_sub_type,
                     terminal_id: raw[3],
-                    terminal_type: u16::from_ne_bytes(unsafe { raw[4..=5].try_into().unwrap() }),
+                    terminal_type: u16::from_ne_bytes(raw[4..=5].try_into().unwrap()),
                     associated_terminal: raw[6],
                     source_id: raw[7],
                     string_index_terminal: raw[8],
@@ -396,7 +396,7 @@ impl UVCControlInterface {
                     num_controls: raw[20],
                     nr_in_pins,
                     source_ids: in_pins,
-                    control_size: control_size,
+                    control_size,
                     controls,
                     extension: raw[last_control],
                 }
