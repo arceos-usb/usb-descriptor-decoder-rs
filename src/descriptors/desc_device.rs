@@ -35,6 +35,12 @@ impl Device {
             (cd_usb & 0xff).try_into().unwrap(),
         )
     }
+
+    pub fn is_refer_interface(&self) -> bool {
+        self.class == StandardUSBDeviceClassCode::ReferInterfaceDescriptor as u8
+            && self.subclass == StandardUSBDeviceClassCode::ReferInterfaceDescriptor as u8
+            && self.protocol == 0
+    }
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug)]
