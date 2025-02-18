@@ -4,6 +4,15 @@ authors = ["dbydd <dbydd@outlook.com>"]
 version = "0.1.0"
 edition = "2021"
 
+[features]
+
+default = ["all_extra_parsers"]
+
+all_extra_parsers = ["uvc","hid"]
+uvc = []
+hid = []
+
+
 [dependencies]
 bit_field = "0.10.2"
 log = "0.4.22"

@@ -1,3 +1,7 @@
+use alloc::vec::Vec;
+
+use super::desc_interface::TopologyUSBFunction;
+
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(C, packed)]
 pub struct Configuration {
@@ -35,4 +39,9 @@ impl Configuration {
     pub fn max_power(&self) -> u8 {
         self.max_power
     }
+}
+
+pub struct TopologyConfigDesc {
+    pub desc: Configuration,
+    pub functions: Vec<TopologyUSBFunction>,
 }

@@ -1,33 +1,19 @@
-//TODO: Restruct code!
-use core::ptr;
-
-use desc_configuration::Configuration;
-use desc_device::Device;
-use desc_endpoint::Endpoint;
-use desc_hid::{HIDDescriptorTypes, Hid};
-use desc_interface::{Interface, InterfaceAssociation};
-use desc_str::Str;
-use desc_uvc::{
-    uvc_endpoints::UVCVideoControlInterruptEndpoint,
-    uvc_interfaces::{
-        UVCControlInterface, UVCInterface, UVCInterfaceSubclass, UVCStreamingInterface,
-    },
-    UVCDescriptorTypes,
-};
-use log::trace;
+use alloc::vec::Vec;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
-use parser::{Error, ParserMetaData};
 
-pub mod parser;
-pub mod topological_desc;
+use crate::ParserError;
 
 pub mod desc_configuration;
 pub mod desc_device;
 pub mod desc_endpoint;
-pub mod desc_hid;
 pub mod desc_interface;
 pub mod desc_str;
+pub mod parser;
+
+#[cfg(feature = "hid")]
+pub mod desc_hid;
+#[cfg(feature = "uvc")]
 pub mod desc_uvc;
 
 #[allow(non_camel_case_types)]
@@ -54,107 +40,12 @@ pub enum USBStandardDescriptorTypes {
     SuperSpeedPlusIsochEndpointCompanion = 0x31,
 }
 
-#[derive(Clone, Debug)]
-pub enum USBDescriptor {
-    Device(Device),
-    Configuration(Configuration),
-    Str(Str),
-    Interface(Interface),
-    InterfaceAssociation(InterfaceAssociation),
-    Endpoint(Endpoint),
-    Hid(Hid),
-    UVCInterface(UVCInterface),
-    UVCClassSpecVideoControlInterruptEndpoint(UVCVideoControlInterruptEndpoint),
-}
-
-impl USBDescriptor {
-    pub(crate) fn from_slice(raw: &[u8], metadata: ParserMetaData) -> Result<Self, Error> {
-        trace!("from slice! meta:{:?}", metadata);
-        assert_eq!(raw.len(), raw[0].into());
-        match Self::from_slice_standard_usb(raw) {
-            Ok(okay) => Ok(okay),
-            Err(_) if let ParserMetaData::HID = metadata => Self::from_slice_hid(raw),
-            Err(_) if let ParserMetaData::UVC(flag) = metadata => Self::from_slice_uvc(raw, flag),
-            Err(any) => panic!("unknown situation {:?},{:?}", any, metadata),
-        }
-    }
-
-    pub(crate) fn from_slice_uvc(raw: &[u8], flag: u8) -> Result<Self, Error> {
-        trace!("from slice uvc!{:?}", raw);
-        match UVCDescriptorTypes::from_u8(raw[1]).unwrap() {
-            UVCDescriptorTypes::UVCClassSpecUnderfined => panic!("underfined!"),
-            UVCDescriptorTypes::UVCClassSpecDevice => todo!(),
-            UVCDescriptorTypes::UVCClassSpecConfiguration => todo!(),
-            UVCDescriptorTypes::UVCClassSpecString => todo!(),
-            UVCDescriptorTypes::UVCClassSpecInterface => {
-                match UVCInterfaceSubclass::from_u8(if flag == 0 { raw[2] } else { flag }).unwrap()
-                {
-                    UVCInterfaceSubclass::UNDEFINED => panic!("impossible!"),
-                    UVCInterfaceSubclass::VIDEOCONTROL => Ok(Self::UVCInterface(
-                        UVCInterface::Control(UVCControlInterface::from_u8_array(raw)),
-                    )),
-                    UVCInterfaceSubclass::VIDEOSTREAMING => Ok(Self::UVCInterface(
-                        UVCInterface::Streaming(UVCStreamingInterface::from_u8_array(raw)),
-                    )),
-                    UVCInterfaceSubclass::VIDEO_INTERFACE_COLLECTION => {
-                        panic!("this subclass only appear in iac, impossible here!");
-                    }
-                }
-            }
-            UVCDescriptorTypes::UVCClassSpecVideoControlInterruptEndpoint => {
-                Ok(Self::UVCClassSpecVideoControlInterruptEndpoint(unsafe {
-                    ptr::read((raw as *const [u8]).cast())
-                }))
-            }
-        }
-    }
-
-    pub(crate) fn from_slice_hid(raw: &[u8]) -> Result<Self, Error> {
-        match HIDDescriptorTypes::from_u8(raw[1]).unwrap() {
-            HIDDescriptorTypes::Hid => {
-                Ok(Self::Hid(unsafe { ptr::read((raw as *const [u8]).cast()) }))
-            }
-            HIDDescriptorTypes::HIDReport => todo!(),
-            HIDDescriptorTypes::HIDPhysical => todo!(),
-        }
-    }
-
-    pub(crate) fn from_slice_standard_usb(raw: &[u8]) -> Result<Self, Error> {
-        trace!(
-            "try to parse slice from standard usb desc! type: {}",
-            raw[1]
-        );
-        match USBStandardDescriptorTypes::from_u8(raw[1]) {
-            Some(t) => {
-                let raw: *const [u8] = raw;
-                match t {
-                    // SAFETY: This operation is safe because the length of `raw` is equivalent to the
-                    // one of the descriptor.
-                    USBStandardDescriptorTypes::Device => {
-                        Ok(Self::Device(unsafe { ptr::read(raw.cast()) }))
-                    }
-                    USBStandardDescriptorTypes::Configuration => {
-                        Ok(Self::Configuration(unsafe { ptr::read(raw.cast()) }))
-                    }
-                    USBStandardDescriptorTypes::String => {
-                        Ok(Self::Str(unsafe { ptr::read(raw.cast()) }))
-                    }
-                    USBStandardDescriptorTypes::Interface => {
-                        Ok(Self::Interface(unsafe { ptr::read(raw.cast()) }))
-                    }
-                    USBStandardDescriptorTypes::Endpoint => {
-                        Ok(Self::Endpoint(unsafe { ptr::read(raw.cast()) }))
-                    }
-                    USBStandardDescriptorTypes::InterfaceAssociation => {
-                        Ok(Self::InterfaceAssociation(unsafe { ptr::read(raw.cast()) }))
-                    }
-                    other => {
-                        unimplemented!("please implement descriptor type:{:?}", other)
-                    }
-                }
-            }
-            None => Err(Error::UnrecognizedType(raw[1])),
-        }
+impl USBStandardDescriptorTypes {
+    ///always peek first data chunk
+    pub fn peek_type(data: &[u8]) -> Result<(USBStandardDescriptorTypes, u8), ParserError> {
+        USBStandardDescriptorTypes::from_u8(data[1])
+            .ok_or(ParserError::PeekFailed(data[1].clone()))
+            .map(|desc_type| (desc_type, data[0]))
     }
 }
 
