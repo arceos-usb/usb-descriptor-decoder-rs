@@ -41,6 +41,7 @@ impl Configuration {
     }
 }
 
+#[derive(Debug)]
 pub struct TopologyConfigDesc {
     pub desc: Configuration,
     pub functions: Vec<TopologyUSBFunction>,

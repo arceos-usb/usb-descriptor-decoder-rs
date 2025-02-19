@@ -4,6 +4,7 @@ use crate::TopologyDescriptor;
 
 use super::desc_endpoint::Endpoint;
 
+pub type InterfaceIdentifier = (u8, u8, u8);
 #[derive(Copy, Clone, Default, Debug)]
 #[repr(C, packed)]
 pub struct Interface {
@@ -18,7 +19,7 @@ pub struct Interface {
     pub interface: u8,
 }
 impl Interface {
-    pub fn ty(&self) -> (u8, u8, u8) {
+    pub fn ty(&self) -> InterfaceIdentifier {
         (
             self.interface_class,
             self.interface_subclass,
@@ -39,16 +40,34 @@ pub struct InterfaceAssociation {
     pub function_protocol: u8,
     pub function: u8,
 }
-
-pub struct USBInterface {
-    interface: Interface,
-    endpoints: Vec<Endpoint>,
-    flag: String,
+impl InterfaceAssociation {
+    pub fn ty(&self) -> InterfaceIdentifier {
+        (
+            self.function_class,
+            self.function_subclass,
+            self.function_protocol,
+        )
+    }
 }
 
-pub struct ExtraDesc(Vec<Box<dyn TopologyDescriptor>>);
+#[derive(Debug)]
+pub struct USBInterface {
+    pub interface: Interface,
+    pub endpoints: Vec<Endpoint>,
+    pub flag: String,
+    pub extra: ExtraDesc,
+}
 
+pub type ExtraDesc = Vec<Box<dyn TopologyDescriptor>>;
+
+#[derive(Debug)]
 pub enum TopologyUSBFunction {
-    Interface(Vec<USBInterface>, ExtraDesc),
-    InterfaceAssociation(InterfaceAssociation, Vec<USBInterface>, ExtraDesc),
+    Interface(Vec<USBInterface>),
+    InterfaceAssociation(InterfaceAssociation, Vec<Vec<USBInterface>>),
+}
+
+impl USBInterface {
+    pub fn is_alternative(&self, ident: &Interface) -> bool {
+        self.interface.interface_number == ident.interface_number
+    }
 }

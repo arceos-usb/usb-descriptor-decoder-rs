@@ -1,6 +1,15 @@
-use alloc::string::ToString;
+use alloc::{boxed::Box, string::ToString, vec::Vec};
+use num_traits::FromPrimitive;
 
-use crate::{descriptors::desc_device::StandardUSBDeviceClassCode, DescriptorDecoderModule};
+use crate::{
+    descriptors::{
+        desc_device::StandardUSBDeviceClassCode,
+        desc_hid::{HIDDescriptorTypes, Hid},
+        desc_interface::{ExtraDesc, TopologyUSBFunction, USBInterface},
+        parser, USBStandardDescriptorTypes,
+    },
+    DescriptorDecoder, DescriptorDecoderModule, ParserError,
+};
 
 pub struct HIDParserModule {}
 
@@ -23,6 +32,35 @@ impl DescriptorDecoderModule for HIDParserModule {
         ),
         crate::ParserError,
     > {
-        todo!()
+        let mut offset: usize = 0;
+        loop {
+            match USBStandardDescriptorTypes::peek_type(data)? {
+                (USBStandardDescriptorTypes::Interface, len) => {
+                    offset += len as usize;
+                    let usbinterfaces = unsafe {
+                        parser::parse_interface_group(
+                            &data[..],
+                            |data| {
+                                if data[1] == HIDDescriptorTypes::Hid as u8 {
+                                    let hid = DescriptorDecoder::cast::<Hid>(&data[..]);
+                                    return Some(Box::new(hid));
+                                }
+                                return None;
+                            },
+                            &mut offset,
+                            "hid".to_string(),
+                        )
+                    }?;
+
+                    return Ok((TopologyUSBFunction::Interface(usbinterfaces), offset));
+                }
+                (USBStandardDescriptorTypes::InterfaceAssociation, _) => {
+                    return Err(ParserError::NotSupportedDescriptorCombination(
+                        "InterfaceAssociation in HID".to_string(),
+                    ))
+                }
+                _ => return Err(ParserError::NotFunction),
+            }
+        }
     }
 }

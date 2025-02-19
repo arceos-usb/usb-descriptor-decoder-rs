@@ -3,7 +3,7 @@ use num_derive::FromPrimitive;
 
 use super::desc_configuration::TopologyConfigDesc;
 
-#[derive(Copy, Clone, Default, Debug)]
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
 #[repr(C, packed)]
 pub struct Device {
     pub len: u8,
@@ -86,6 +86,7 @@ pub enum StandardUSBDeviceClassCode {
 //     ReferInterfaceAssociationDescriptor = 0x01,
 // }
 
+#[derive(Debug)]
 pub struct TopologyDeviceDesc {
     pub desc: Device,
     pub configs: Vec<TopologyConfigDesc>,

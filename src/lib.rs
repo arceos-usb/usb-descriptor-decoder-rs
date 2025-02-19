@@ -2,6 +2,8 @@
 #![feature(if_let_guard, let_chains)]
 #![allow(dead_code)]
 
+use core::fmt::Debug;
+
 use alloc::{boxed::Box, collections::btree_map::BTreeMap, string::String, vec::Vec};
 use descriptors::{desc_device::TopologyDeviceDesc, desc_interface::TopologyUSBFunction};
 
@@ -17,9 +19,10 @@ pub struct DescriptorDecoder {
 
 impl DescriptorDecoder {
     pub fn new() -> DescriptorDecoder {
-        DescriptorDecoder {
+        let descriptor_decoder = DescriptorDecoder {
             modules: BTreeMap::new(),
-        }
+        };
+        contained_parsers::load_embed_parsers(descriptor_decoder)
     }
 
     pub fn add_module(&mut self, module: Box<dyn DescriptorDecoderModule>) {
@@ -43,10 +46,13 @@ pub enum ParserError {
     NotConfigDescriptor,
     NotFunction,
     NotEndpoint,
+    NotEnoughEndpoints,
     NoSuitableModule,
     PeekFailed(u8),
+    NotSupportedDescriptorCombination(String),
 }
 
-pub trait TopologyDescriptor {
+pub trait TopologyDescriptor: Debug + Send + Sync {
     fn desc_type(&self) -> u8;
+    fn actual_len(&self) -> Offset;
 }

@@ -1,5 +1,7 @@
 use num_derive::FromPrimitive;
 
+use crate::TopologyDescriptor;
+
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(C, packed)]
 pub struct Hid {
@@ -10,6 +12,16 @@ pub struct Hid {
     pub num_descriptions: u8,
     pub report_descriptor_type: u8, // actually, these two entry is a variant length vector, but we only pick first entry!
     pub report_descriptor_len: u16, //
+}
+
+impl TopologyDescriptor for Hid {
+    fn desc_type(&self) -> u8 {
+        self.descriptor_type
+    }
+
+    fn actual_len(&self) -> crate::Offset {
+        self.len as _
+    }
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug)]
@@ -34,8 +46,8 @@ pub enum USBHIDProtocolDescriptorType {
 pub enum HIDDescriptorTypes {
     //HID
     Hid = 0x21,
-    HIDReport = 0x22,
-    HIDPhysical = 0x23,
+    // HIDReport = 0x22,
+    // HIDPhysical = 0x23,
 }
 #[derive(Debug)]
 pub struct ReportEvent {
