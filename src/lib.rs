@@ -50,9 +50,13 @@ pub enum ParserError {
     NoSuitableModule,
     PeekFailed(u8),
     NotSupportedDescriptorCombination(String),
+    Ended,
 }
 
 pub trait TopologyDescriptor: Debug + Send + Sync {
     fn desc_type(&self) -> u8;
+    fn subtype(&self) -> Option<u8> {
+        return None;
+    }
     fn actual_len(&self) -> Offset;
 }

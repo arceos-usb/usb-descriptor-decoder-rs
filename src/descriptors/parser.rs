@@ -20,7 +20,7 @@ impl DescriptorDecoder {
     pub fn parse(&self, input: Vec<u8>) -> Result<TopologyDeviceDesc, ParserError> {
         match USBStandardDescriptorTypes::peek_type(&input[..2]) {
             Ok((desc_type, len)) if desc_type == USBStandardDescriptorTypes::Device => {
-                let device: Device = Self::cast(&input[0..len as _]);
+                let device: Device = unsafe { Self::cast(&input[0..len as _]) };
                 let mut configs: Vec<TopologyConfigDesc> = Vec::new();
 
                 let mut offset: usize = len as _;
@@ -42,22 +42,22 @@ impl DescriptorDecoder {
     pub fn peek_device_desc(input: Vec<u8>) -> Result<Device, ParserError> {
         match USBStandardDescriptorTypes::peek_type(&input[..2]) {
             Ok((desc_type, len)) if desc_type == USBStandardDescriptorTypes::Device => {
-                let device: Device = Self::cast(&input[0..len as _]);
+                let device: Device = unsafe { Self::cast(&input[0..len as _]) };
                 Ok(device)
             }
             _ => Err(ParserError::NotDeviceDescriptor),
         }
     }
 
-    pub fn cast<T>(input: &[u8]) -> T {
+    pub unsafe fn cast<T>(input: &[u8]) -> T {
         let raw: *const [u8] = input;
-        unsafe { ptr::read(raw as *const T) }
+        ptr::read(raw as *const T)
     }
 
     pub fn parse_config(&self, input: &[u8]) -> Result<(TopologyConfigDesc, Offset), ParserError> {
         match USBStandardDescriptorTypes::peek_type(&input[..2]) {
             Ok((desc_type, len)) if desc_type == USBStandardDescriptorTypes::Configuration => {
-                let config: Configuration = Self::cast(&input[0..len as _]);
+                let config: Configuration = unsafe { Self::cast(&input[0..len as _]) };
                 let mut functions: Vec<TopologyUSBFunction> = Vec::new();
                 let mut offset: usize = len as _;
 
@@ -107,7 +107,7 @@ impl DescriptorDecoder {
         input: &[u8],
         len: usize,
     ) -> Result<(TopologyUSBFunction, Offset), ParserError> {
-        let cast: Interface = Self::cast(&input[..len]);
+        let cast: Interface = unsafe { Self::cast(&input[..len]) };
         let descriptor_decoder_module = self
             .modules
             .values()
@@ -128,7 +128,7 @@ impl DescriptorDecoder {
         input: &[u8],
         len: usize,
     ) -> Result<(TopologyUSBFunction, Offset), ParserError> {
-        let cast: InterfaceAssociation = Self::cast(&input[..len]);
+        let cast: InterfaceAssociation = unsafe { Self::cast(&input[..len]) };
         let descriptor_decoder_module = self
             .modules
             .values()
@@ -149,7 +149,7 @@ pub fn parse_endpoint(input: &[u8]) -> Result<(Endpoint, Offset), ParserError> {
     if let Ok((USBStandardDescriptorTypes::Endpoint, len)) =
         USBStandardDescriptorTypes::peek_type(input)
     {
-        let cast: Endpoint = DescriptorDecoder::cast(&input[..len as _]);
+        let cast: Endpoint = unsafe { DescriptorDecoder::cast(&input[..len as _]) };
         Ok((cast, len as _))
     } else {
         Err(ParserError::NotEndpoint)
@@ -160,7 +160,7 @@ pub fn parse_single_interface(input: &[u8]) -> Result<Interface, ParserError> {
     if let Ok((USBStandardDescriptorTypes::Interface, len)) =
         USBStandardDescriptorTypes::peek_type(input)
     {
-        let cast: Interface = DescriptorDecoder::cast(&input[..len as _]);
+        let cast: Interface = unsafe { DescriptorDecoder::cast(&input[..len as _]) };
         Ok(cast)
     } else {
         Err(ParserError::NotFunction)
@@ -171,7 +171,7 @@ pub fn parse_interface_association(input: &[u8]) -> Result<InterfaceAssociation,
     if let Ok((USBStandardDescriptorTypes::InterfaceAssociation, len)) =
         USBStandardDescriptorTypes::peek_type(input)
     {
-        let cast: InterfaceAssociation = DescriptorDecoder::cast(&input[..len as _]);
+        let cast: InterfaceAssociation = unsafe { DescriptorDecoder::cast(&input[..len as _]) };
         Ok(cast)
     } else {
         Err(ParserError::NotFunction)
@@ -282,7 +282,6 @@ where
 #[cfg(test)]
 mod test {
     use alloc::{format, vec};
-    use log::{debug, error, info};
 
     use crate::{descriptors::desc_device::Device, DescriptorDecoder};
 
@@ -294,7 +293,7 @@ mod test {
         ];
 
         let descriptor_decoder = DescriptorDecoder::new();
-        let (result, offset) = descriptor_decoder.parse_config(&input[..]).unwrap();
+        let (result, _) = descriptor_decoder.parse_config(&input[..]).unwrap();
         let formatted = format!("{:?}", result);
 
         assert_eq!(formatted, "TopologyConfigDesc { desc: Configuration { length: 9, ty: 2, total_length: 34, num_interfaces: 1, config_val: 1, config_string: 6, attributes: 160, max_power: 50 }, functions: [Interface([USBInterface { interface: Interface { len: 9, descriptor_type: 4, interface_number: 0, alternate_setting: 0, num_endpoints: 1, interface_class: 3, interface_subclass: 1, interface_protocol: 2, interface: 0 }, endpoints: [Endpoint { len: 7, descriptor_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 4, interval: 7, ssc: None }], flag: \"hid\", extra: [Hid { len: 9, descriptor_type: 33, hid_bcd: 1, country_code: 0, num_descriptions: 1, report_descriptor_type: 34, report_descriptor_len: 52 }] }])] }")

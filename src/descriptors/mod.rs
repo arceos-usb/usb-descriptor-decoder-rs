@@ -44,7 +44,13 @@ impl USBStandardDescriptorTypes {
     ///always peek first data chunk
     pub fn peek_type(data: &[u8]) -> Result<(USBStandardDescriptorTypes, u8), ParserError> {
         USBStandardDescriptorTypes::from_u8(data[1])
-            .ok_or(ParserError::PeekFailed(data[1].clone()))
+            .ok_or_else(|| {
+                if data[0] == 0 && data[1] == 0 {
+                    ParserError::Ended
+                } else {
+                    ParserError::PeekFailed(data[1].clone())
+                }
+            })
             .map(|desc_type| (desc_type, data[0]))
     }
 }

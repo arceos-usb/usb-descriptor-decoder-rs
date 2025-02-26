@@ -63,7 +63,7 @@ pub type ExtraDesc = Vec<Box<dyn TopologyDescriptor>>;
 #[derive(Debug)]
 pub enum TopologyUSBFunction {
     Interface(Vec<USBInterface>),
-    InterfaceAssociation(InterfaceAssociation, Vec<Vec<USBInterface>>),
+    InterfaceAssociation(InterfaceAssociation, Vec<Vec<USBInterface>>, ExtraDesc),
 }
 
 impl USBInterface {

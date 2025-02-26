@@ -6,6 +6,8 @@ use log::trace;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
+use crate::Offset;
+
 #[derive(Copy, Clone, Debug, PartialEq, FromPrimitive)]
 #[allow(non_camel_case_types)]
 #[repr(u8)]
@@ -112,72 +114,72 @@ pub enum UVCStreamingInterface {
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCControlInterfaceHeader {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    bcd_uvc: u16,
-    total_length: u16,
-    clock_frequency: u32,
-    in_collection: u8,
-    interface_nr: Vec<u8>,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub bcd_uvc: u16,
+    pub total_length: u16,
+    pub clock_frequency: u32,
+    pub in_collection: u8,
+    pub interface_nr: Vec<u8>,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCControlInterfaceInputTerminal {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    terminal_id: u8,
-    terminal_type: u16,
-    associated_terminal: u8,
-    string_index_terminal: u8,
-    reserved: Vec<u8>,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub terminal_id: u8,
+    pub terminal_type: u16,
+    pub associated_terminal: u8,
+    pub string_index_terminal: u8,
+    pub reserved: Vec<u8>,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCControlInterfaceOutputTerminal {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    terminal_id: u8,
-    terminal_type: u16,
-    associated_terminal: u8,
-    source_id: u8,
-    string_index_terminal: u8,
-    reserved: Vec<u8>,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub terminal_id: u8,
+    pub terminal_type: u16,
+    pub associated_terminal: u8,
+    pub source_id: u8,
+    pub string_index_terminal: u8,
+    pub reserved: Vec<u8>,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCControlInterfaceExtensionUnit {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    unit_id: u8,
-    guid_extension_code: [u8; 16],
-    num_controls: u8,
-    nr_in_pins: u8,
-    source_ids: Vec<u8>,
-    control_size: u8,
-    controls: Vec<u8>,
-    extension: u8,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub unit_id: u8,
+    pub guid_extension_code: [u8; 16],
+    pub num_controls: u8,
+    pub nr_in_pins: u8,
+    pub source_ids: Vec<u8>,
+    pub control_size: u8,
+    pub controls: Vec<u8>,
+    pub extension: u8,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCControlInterfaceProcessingUnit {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    unit_id: u8,
-    source_id: u8,
-    max_multiplier: u16,
-    control_size: u8,
-    controls: [u8; 3],
-    processing: u8,
-    video_standards: u8,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub unit_id: u8,
+    pub source_id: u8,
+    pub max_multiplier: u16,
+    pub control_size: u8,
+    pub controls: [u8; 3],
+    pub processing: u8,
+    pub video_standards: u8,
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug, PartialEq)]
@@ -194,101 +196,101 @@ pub enum UVCCONTROLOutputTerminalType {
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceInputHeader {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    num_formats: u8,
-    total_length: u16,
-    endpoint_address: u8,
-    info: u8,
-    terminal_link: u8,
-    still_capture_method: u8,
-    trigger_support: u8,
-    trigger_useage: u8,
-    control_size: u8,
-    interface_nr: Vec<u8>,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub num_formats: u8,
+    pub total_length: u16,
+    pub endpoint_address: u8,
+    pub info: u8,
+    pub terminal_link: u8,
+    pub still_capture_method: u8,
+    pub trigger_support: u8,
+    pub trigger_useage: u8,
+    pub control_size: u8,
+    pub interface_nr: Vec<u8>,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceFormatMJPEG {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    format_index: u8,
-    num_frame_descriptors: u8,
-    flags: u8,
-    default_frame_index: u8,
-    aspect_ratio_x: u8,
-    aspect_ratio_y: u8,
-    interlace_flags: u8,
-    is_copy_protect: u8,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub format_index: u8,
+    pub num_frame_descriptors: u8,
+    pub flags: u8,
+    pub default_frame_index: u8,
+    pub aspect_ratio_x: u8,
+    pub aspect_ratio_y: u8,
+    pub interlace_flags: u8,
+    pub is_copy_protect: u8,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceFrameMJPEG {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    frame_index: u8,
-    capabilities: u8,
-    width: u16,
-    height: u16,
-    min_bit_rate: u32,
-    max_bit_rate: u32,
-    max_video_frame_buffer_size: u32,
-    default_frame_interval: u32,
-    frame_interval_type: u8,
-    frame_interval: FrameInterval,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub frame_index: u8,
+    pub capabilities: u8,
+    pub width: u16,
+    pub height: u16,
+    pub min_bit_rate: u32,
+    pub max_bit_rate: u32,
+    pub max_video_frame_buffer_size: u32,
+    pub default_frame_interval: u32,
+    pub frame_interval_type: u8,
+    pub frame_interval: FrameInterval,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceStillImageFrame {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    endpoint_address: u8,
-    num_image_size_paterns: u8,
-    width_heights: Vec<(u16, u16)>,
-    num_compression_pattern: u8,
-    compressions: Vec<u8>,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub endpoint_address: u8,
+    pub num_image_size_paterns: u8,
+    pub width_heights: Vec<(u16, u16)>,
+    pub num_compression_pattern: u8,
+    pub compressions: Vec<u8>,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceFormatUncompressed {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    format_index: u8,
-    number_frame_descriptor: u8,
-    guid_format: [u8; 16],
-    bits_per_pixel: u8,
-    default_frame_index: u8,
-    aspect_ratio_x: u8,
-    aspect_ratio_y: u8,
-    m_interlace_flags: u8,
-    is_copy_protect: u8,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub format_index: u8,
+    pub number_frame_descriptor: u8,
+    pub guid_format: [u8; 16],
+    pub bits_per_pixel: u8,
+    pub default_frame_index: u8,
+    pub aspect_ratio_x: u8,
+    pub aspect_ratio_y: u8,
+    pub m_interlace_flags: u8,
+    pub is_copy_protect: u8,
 }
 
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceFrameUncompressed {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    frame_index: u8,
-    capabilities: u8,
-    width: u16,
-    height: u16,
-    min_bit_rate: u32,
-    max_bit_rate: u32,
-    max_video_frame_buffer_size: u32,
-    default_frame_interval: u32,
-    frame_interval_type: u8,
-    frame_interval: FrameInterval,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub frame_index: u8,
+    pub capabilities: u8,
+    pub width: u16,
+    pub height: u16,
+    pub min_bit_rate: u32,
+    pub max_bit_rate: u32,
+    pub max_video_frame_buffer_size: u32,
+    pub default_frame_interval: u32,
+    pub frame_interval_type: u8,
+    pub frame_interval: FrameInterval,
 }
 
 #[derive(Clone, Debug)]
@@ -301,12 +303,12 @@ pub enum FrameInterval {
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVSInterfaceColorFormat {
-    length: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    color_primaries: u8,
-    transfer_characteristics: u8,
-    matrix_coefficients: u8,
+    pub length: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: u8,
+    pub color_primaries: u8,
+    pub transfer_characteristics: u8,
+    pub matrix_coefficients: u8,
 }
 
 impl UVCControlInterface {

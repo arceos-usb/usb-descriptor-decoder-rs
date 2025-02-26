@@ -13,8 +13,8 @@ pub enum UVCVideoClassEndpointSubtypes {
 #[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub struct UVCVideoControlInterruptEndpoint {
-    len: u8,
-    descriptor_type: u8,
-    descriptor_sub_type: u8,
-    max_transfer_size: u16,
+    pub len: u8,
+    pub descriptor_type: u8,
+    pub descriptor_sub_type: UVCVideoClassEndpointSubtypes,
+    pub max_transfer_size: u16,
 }

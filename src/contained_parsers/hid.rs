@@ -33,34 +33,32 @@ impl DescriptorDecoderModule for HIDParserModule {
         crate::ParserError,
     > {
         let mut offset: usize = 0;
-        loop {
-            match USBStandardDescriptorTypes::peek_type(data)? {
-                (USBStandardDescriptorTypes::Interface, len) => {
-                    offset += len as usize;
-                    let usbinterfaces = unsafe {
-                        parser::parse_interface_group(
-                            &data[..],
-                            |data| {
-                                if data[1] == HIDDescriptorTypes::Hid as u8 {
-                                    let hid = DescriptorDecoder::cast::<Hid>(&data[..]);
-                                    return Some(Box::new(hid));
-                                }
-                                return None;
-                            },
-                            &mut offset,
-                            "hid".to_string(),
-                        )
-                    }?;
+        match USBStandardDescriptorTypes::peek_type(data)? {
+            (USBStandardDescriptorTypes::Interface, len) => {
+                offset += len as usize;
+                let usbinterfaces = unsafe {
+                    parser::parse_interface_group(
+                        &data[..],
+                        |data| {
+                            if data[1] == HIDDescriptorTypes::Hid as u8 {
+                                let hid = DescriptorDecoder::cast::<Hid>(&data[..]);
+                                return Some(Box::new(hid));
+                            }
+                            return None;
+                        },
+                        &mut offset,
+                        "hid".to_string(),
+                    )
+                }?;
 
-                    return Ok((TopologyUSBFunction::Interface(usbinterfaces), offset));
-                }
-                (USBStandardDescriptorTypes::InterfaceAssociation, _) => {
-                    return Err(ParserError::NotSupportedDescriptorCombination(
-                        "InterfaceAssociation in HID".to_string(),
-                    ))
-                }
-                _ => return Err(ParserError::NotFunction),
+                return Ok((TopologyUSBFunction::Interface(usbinterfaces), offset));
             }
+            (USBStandardDescriptorTypes::InterfaceAssociation, _) => {
+                return Err(ParserError::NotSupportedDescriptorCombination(
+                    "InterfaceAssociation in HID".to_string(),
+                ))
+            }
+            _ => return Err(ParserError::NotFunction),
         }
     }
 }
