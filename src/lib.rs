@@ -33,7 +33,7 @@ impl DescriptorDecoder {
 
 pub type Offset = usize;
 
-pub trait DescriptorDecoderModule {
+pub trait DescriptorDecoderModule: Send + Sync {
     fn function_name_string(&self) -> String;
     fn filter_triple(&self, class: u8, subclass: u8, protocol: u8) -> bool;
     ///return: TopologyUSBFunction,Len
