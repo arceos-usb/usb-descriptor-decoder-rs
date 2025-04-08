@@ -1,18 +1,15 @@
 use core::{ops::AddAssign, ptr, usize};
 
-use alloc::{boxed::Box, collections::vec_deque::VecDeque, string::String, sync::Arc, vec::Vec};
+use alloc::{boxed::Box, string::String, sync::Arc, vec::Vec};
 use log::error;
-use num_traits::Zero;
 
 use crate::{DescriptorDecoder, Offset, ParserError, TopologyDescriptor};
 
 use super::{
     desc_configuration::{Configuration, TopologyConfigDesc},
-    desc_device::{Device, StandardUSBDeviceClassCode, TopologyDeviceDesc},
+    desc_device::{Device, TopologyDeviceDesc},
     desc_endpoint::Endpoint,
-    desc_interface::{
-        Interface, InterfaceAssociation, InterfaceIdentifier, TopologyUSBFunction, USBInterface,
-    },
+    desc_interface::{Interface, InterfaceAssociation, TopologyUSBFunction, USBInterface},
     USBStandardDescriptorTypes,
 };
 

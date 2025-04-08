@@ -1,11 +1,10 @@
-use alloc::{boxed::Box, string::ToString, vec::Vec};
-use num_traits::FromPrimitive;
+use alloc::{boxed::Box, string::ToString};
 
 use crate::{
     descriptors::{
         desc_device::StandardUSBDeviceClassCode,
         desc_hid::{HIDDescriptorTypes, Hid},
-        desc_interface::{ExtraDesc, TopologyUSBFunction, USBInterface},
+        desc_interface::TopologyUSBFunction,
         parser, USBStandardDescriptorTypes,
     },
     DescriptorDecoder, DescriptorDecoderModule, ParserError,

@@ -6,7 +6,6 @@ use log::trace;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::Offset;
 
 #[derive(Copy, Clone, Debug, PartialEq, FromPrimitive)]
 #[allow(non_camel_case_types)]

@@ -4,8 +4,8 @@
 
 use core::fmt::Debug;
 
-use alloc::{boxed::Box, collections::btree_map::BTreeMap, string::String, vec::Vec};
-use descriptors::{desc_device::TopologyDeviceDesc, desc_interface::TopologyUSBFunction};
+use alloc::{boxed::Box, collections::btree_map::BTreeMap, string::String};
+use descriptors::desc_interface::TopologyUSBFunction;
 
 extern crate alloc;
 

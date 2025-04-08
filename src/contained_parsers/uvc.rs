@@ -1,4 +1,4 @@
-use alloc::{boxed::Box, fmt::format, format, string::ToString, sync::Arc, vec::Vec};
+use alloc::{boxed::Box, format, string::ToString, sync::Arc, vec::Vec};
 use num_traits::FromPrimitive;
 
 use crate::{
@@ -40,7 +40,7 @@ impl DescriptorDecoderModule for UVCParserModule {
         crate::ParserError,
     > {
         let mut offset: usize = 0;
-        let (should_be_ia, mut len) = USBStandardDescriptorTypes::peek_type(data)?;
+        let (should_be_ia, len) = USBStandardDescriptorTypes::peek_type(data)?;
         assert_eq!(
             should_be_ia,
             USBStandardDescriptorTypes::InterfaceAssociation
