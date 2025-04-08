@@ -1,4 +1,4 @@
-use alloc::{boxed::Box, fmt::format, format, string::ToString, vec::Vec};
+use alloc::{boxed::Box, fmt::format, format, string::ToString, sync::Arc, vec::Vec};
 use num_traits::FromPrimitive;
 
 use crate::{
@@ -47,8 +47,9 @@ impl DescriptorDecoderModule for UVCParserModule {
         );
         offset += len as usize;
 
-        let desc_ia = unsafe { DescriptorDecoder::cast::<InterfaceAssociation>(&data[..offset]) };
-        let mut iac_level_extras: Vec<Box<dyn TopologyDescriptor>> = Vec::new();
+        let desc_ia =
+            unsafe { DescriptorDecoder::cast::<InterfaceAssociation>(&data[..offset]) }.into();
+        let mut iac_level_extras: Vec<Arc<Box<dyn TopologyDescriptor>>> = Vec::new();
         let mut sub_interfaces = Vec::new();
 
         loop {
@@ -75,7 +76,7 @@ impl DescriptorDecoderModule for UVCParserModule {
                     let got = UVCTopology::try_parse(&data[offset..], code)
                         .ok_or(ParserError::PeekFailed(code))?;
                     offset += got.actual_len();
-                    iac_level_extras.push(got);
+                    iac_level_extras.push(got.into());
                 }
                 Err(ParserError::Ended) => {
                     return Ok((

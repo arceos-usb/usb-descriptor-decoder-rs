@@ -1,4 +1,4 @@
-use alloc::vec::Vec;
+use alloc::{sync::Arc, vec::Vec};
 use num_derive::FromPrimitive;
 
 use super::desc_configuration::TopologyConfigDesc;
@@ -88,6 +88,6 @@ pub enum StandardUSBDeviceClassCode {
 
 #[derive(Debug)]
 pub struct TopologyDeviceDesc {
-    pub desc: Device,
-    pub configs: Vec<TopologyConfigDesc>,
+    pub desc: Arc<Device>,
+    pub configs: Vec<Arc<TopologyConfigDesc>>,
 }

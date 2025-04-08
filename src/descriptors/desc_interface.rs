@@ -1,4 +1,4 @@
-use alloc::{boxed::Box, string::String, vec::Vec};
+use alloc::{boxed::Box, string::String, sync::Arc, vec::Vec};
 
 use crate::TopologyDescriptor;
 
@@ -52,18 +52,22 @@ impl InterfaceAssociation {
 
 #[derive(Debug)]
 pub struct USBInterface {
-    pub interface: Interface,
-    pub endpoints: Vec<Endpoint>,
+    pub interface: Arc<Interface>,
+    pub endpoints: Vec<Arc<Endpoint>>,
     pub flag: String,
     pub extra: ExtraDesc,
 }
 
-pub type ExtraDesc = Vec<Box<dyn TopologyDescriptor>>;
+pub type ExtraDesc = Vec<Arc<Box<dyn TopologyDescriptor>>>;
 
 #[derive(Debug)]
 pub enum TopologyUSBFunction {
-    Interface(Vec<USBInterface>),
-    InterfaceAssociation(InterfaceAssociation, Vec<Vec<USBInterface>>, ExtraDesc),
+    Interface(Vec<Arc<USBInterface>>),
+    InterfaceAssociation(
+        Arc<InterfaceAssociation>,
+        Vec<Vec<Arc<USBInterface>>>,
+        ExtraDesc,
+    ),
 }
 
 impl USBInterface {

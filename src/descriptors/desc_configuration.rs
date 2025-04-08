@@ -1,4 +1,4 @@
-use alloc::vec::Vec;
+use alloc::{sync::Arc, vec::Vec};
 
 use super::desc_interface::TopologyUSBFunction;
 
@@ -43,6 +43,6 @@ impl Configuration {
 
 #[derive(Debug)]
 pub struct TopologyConfigDesc {
-    pub desc: Configuration,
-    pub functions: Vec<TopologyUSBFunction>,
+    pub desc: Arc<Configuration>,
+    pub functions: Vec<Arc<TopologyUSBFunction>>,
 }

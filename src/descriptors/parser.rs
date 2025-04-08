@@ -1,6 +1,6 @@
 use core::{ops::AddAssign, ptr, usize};
 
-use alloc::{boxed::Box, collections::vec_deque::VecDeque, string::String, vec::Vec};
+use alloc::{boxed::Box, collections::vec_deque::VecDeque, string::String, sync::Arc, vec::Vec};
 use log::error;
 use num_traits::Zero;
 
@@ -21,17 +21,17 @@ impl DescriptorDecoder {
         match USBStandardDescriptorTypes::peek_type(&input[..2]) {
             Ok((desc_type, len)) if desc_type == USBStandardDescriptorTypes::Device => {
                 let device: Device = unsafe { Self::cast(&input[0..len as _]) };
-                let mut configs: Vec<TopologyConfigDesc> = Vec::new();
+                let mut configs: Vec<Arc<TopologyConfigDesc>> = Vec::new();
 
                 let mut offset: usize = len as _;
                 for _ in 0..device.num_configurations {
                     let (config, l) = self.parse_config(&input[offset..])?;
-                    configs.push(config);
+                    configs.push(config.into());
                     offset += l;
                 }
 
                 Ok(TopologyDeviceDesc {
-                    desc: device,
+                    desc: device.into(),
                     configs,
                 })
             }
@@ -58,7 +58,7 @@ impl DescriptorDecoder {
         match USBStandardDescriptorTypes::peek_type(&input[..2]) {
             Ok((desc_type, len)) if desc_type == USBStandardDescriptorTypes::Configuration => {
                 let config: Configuration = unsafe { Self::cast(&input[0..len as _]) };
-                let mut functions: Vec<TopologyUSBFunction> = Vec::new();
+                let mut functions: Vec<Arc<TopologyUSBFunction>> = Vec::new();
                 let mut offset: usize = len as _;
 
                 loop {
@@ -66,7 +66,7 @@ impl DescriptorDecoder {
                         Ok((USBStandardDescriptorTypes::Interface, len_inner)) => {
                             let (function, l) =
                                 self.try_parse_function(&input[offset..], len_inner as _)?;
-                            functions.push(function);
+                            functions.push(Arc::new(function));
                             offset += l;
                         }
                         Ok((USBStandardDescriptorTypes::InterfaceAssociation, len_inner)) => {
@@ -74,7 +74,7 @@ impl DescriptorDecoder {
                                 &input[offset..],
                                 len_inner as _,
                             )?;
-                            functions.push(function);
+                            functions.push(function.into());
                             offset += l;
                         }
                         _ => {
@@ -89,8 +89,8 @@ impl DescriptorDecoder {
 
                 Ok((
                     TopologyConfigDesc {
-                        desc: config,
-                        functions,
+                        desc: config.into(),
+                        functions: functions,
                     },
                     offset,
                 ))
@@ -184,14 +184,14 @@ pub unsafe fn parse_interface_group<P>(
     extra_parser: P,
     offset: &mut usize,
     flag: String,
-) -> Result<Vec<USBInterface>, ParserError>
+) -> Result<Vec<Arc<USBInterface>>, ParserError>
 where
     P: Fn(&[u8]) -> Option<Box<dyn TopologyDescriptor>>,
 {
     let mut result = Vec::new();
 
     let required_interface_number = {
-        let interface: Interface = DescriptorDecoder::cast(&input[..*offset as _]);
+        let interface: Arc<Interface> = Arc::new(DescriptorDecoder::cast(&input[..*offset as _]));
         let mut remain_ep = interface.num_endpoints;
         let mut endpoints = Vec::new();
         let mut extra = Vec::new();
@@ -201,13 +201,13 @@ where
                     let (ep, len) = parse_endpoint(&input[*offset..])?;
                     offset.add_assign(len);
                     remain_ep -= 1;
-                    endpoints.push(ep);
+                    endpoints.push(ep.into());
                 }
                 Err(ParserError::PeekFailed(_))
                     if let Some(parsed) = extra_parser(&input[*offset..]) =>
                 {
                     offset.add_assign(parsed.actual_len());
-                    extra.push(parsed);
+                    extra.push(parsed.into());
                 }
                 _ => break,
             }
@@ -219,12 +219,15 @@ where
         }
 
         let interface_number = interface.interface_number;
-        result.push(USBInterface {
-            interface,
-            endpoints,
-            flag: flag.clone(),
-            extra,
-        });
+        result.push(
+            USBInterface {
+                interface,
+                endpoints,
+                flag: flag.clone(),
+                extra,
+            }
+            .into(),
+        );
         interface_number
     };
 
@@ -232,7 +235,8 @@ where
         if let Ok((USBStandardDescriptorTypes::Interface, len)) =
             USBStandardDescriptorTypes::peek_type(&input[*offset..])
         {
-            let interface: Interface = DescriptorDecoder::cast(&input[..*offset as _]);
+            let interface: Arc<Interface> =
+                Arc::new(DescriptorDecoder::cast(&input[..*offset as _]));
             if interface.interface_number == required_interface_number {
                 offset.add_assign(len as usize);
 
@@ -245,13 +249,13 @@ where
                             let (ep, len) = parse_endpoint(&input[*offset..])?;
                             offset.add_assign(len);
                             remain_ep -= 1;
-                            endpoints.push(ep);
+                            endpoints.push(ep.into());
                         }
                         Err(ParserError::PeekFailed(_))
                             if let Some(parsed) = extra_parser(&input[*offset..]) =>
                         {
                             offset.add_assign(parsed.actual_len());
-                            extra.push(parsed);
+                            extra.push(parsed.into());
                         }
                         _ => break,
                     }
@@ -262,12 +266,15 @@ where
                     return Err(ParserError::NotEnoughEndpoints);
                 }
 
-                result.push(USBInterface {
-                    interface,
-                    endpoints,
-                    flag: flag.clone(),
-                    extra,
-                });
+                result.push(
+                    USBInterface {
+                        interface,
+                        endpoints,
+                        flag: flag.clone(),
+                        extra,
+                    }
+                    .into(),
+                );
             } else {
                 break;
             }
