@@ -1,6 +1,6 @@
 use bit_field::BitField;
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
+use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use super::PortSpeed;
 
@@ -103,7 +103,8 @@ impl Endpoint {
     }
 }
 
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash, FromPrimitive)]
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash, FromPrimitive, ToPrimitive)]
 pub enum EndpointType {
     /// Not Valid.
     NotValid = 0,
@@ -121,4 +122,13 @@ pub enum EndpointType {
     BulkIn = 6,
     /// Interrupt In.
     InterruptIn = 7,
+}
+
+impl EndpointType {
+    pub fn cast<T>(&self) -> T
+    where
+        T: FromPrimitive,
+    {
+        FromPrimitive::from_u8(self.to_u8().unwrap()).unwrap()
+    }
 }
