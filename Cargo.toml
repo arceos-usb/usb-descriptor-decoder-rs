@@ -6,7 +6,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A no-std extensible USB Descriptor Decoder, support organize Descriptors as tree structure"
 repository = "https://github.com/arceos-usb/usb-descriptor-decoder-rs"
-categories = ["usb"]
+categories = ["embedded","encoding"]
 keywords = ["usb","no_std","descriptor"]
 
 [dependencies]
