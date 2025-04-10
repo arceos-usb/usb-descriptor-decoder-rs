@@ -89,18 +89,15 @@ impl ParserMetaData {
                 _ => {}
             }
 
-            match (
-                UVCStandardVideoInterfaceClass::from_u8(class),
-                UVCInterfaceSubclass::from_u8(subclass),
-                UVCStandardVideoInterfaceProtocols::from_u8(protocol),
-            ) {
-                (
+            if let (
                     Some(UVCStandardVideoInterfaceClass::CC_Video),
                     Some(UVCInterfaceSubclass::VIDEO_INTERFACE_COLLECTION),
                     Some(UVCStandardVideoInterfaceProtocols::PC_PROTOCOL_UNDEFINED),
-                ) => return Self::UVC(0u8),
-                _ => {}
-            }
+                ) = (
+                UVCStandardVideoInterfaceClass::from_u8(class),
+                UVCInterfaceSubclass::from_u8(subclass),
+                UVCStandardVideoInterfaceProtocols::from_u8(protocol),
+            ) { return Self::UVC(0u8) }
 
             Self::Unknown(ParserMetaDataUnknownSituation::NoSpecial)
         };
@@ -129,7 +126,7 @@ impl RawDescriptorParser {
         if self.state != ParserStateMachine::Device {
             self.result
                 .as_ref()
-                .map(|r| r.data.num_configurations.clone() as _)
+                .map(|r| r.data.num_configurations as _)
                 .unwrap()
         } else {
             panic!("do not call this method before device has been deserialized!");
@@ -219,16 +216,11 @@ impl RawDescriptorParser {
     fn parse_single_device_descriptor(&mut self) -> Result<TopologicalUSBDescriptorDevice, Error> {
         trace!("parse single device desc!");
         if let USBDescriptor::Device(dev) = self.parse_any_descriptor()? {
-            {
-                match self.metadata {
-                    ParserMetaData::NotDetermined => {
-                        self.metadata =
-                            ParserMetaData::determine(dev.class, dev.subclass, dev.protocol);
-                        trace!("determined device type: {:?}", self.metadata)
-                    }
-                    _ => {}
-                }
-            };
+            if let ParserMetaData::NotDetermined = self.metadata {
+                    self.metadata =
+                        ParserMetaData::determine(dev.class, dev.subclass, dev.protocol);
+                    trace!("determined device type: {:?}", self.metadata)
+                };
             Ok(TopologicalUSBDescriptorDevice {
                 data: dev,
                 child: Vec::new(),
@@ -402,13 +394,13 @@ impl RawDescriptorParser {
         match self.state {
             ParserStateMachine::Device => {
                 let peeked =
-                    USBStandardDescriptorTypes::from_u8(self.device[self.current + 1] as u8);
+                    USBStandardDescriptorTypes::from_u8(self.device[self.current + 1]);
                 trace!("peeked type:{:?}", peeked);
                 peeked
             }
             ParserStateMachine::Config(index) | ParserStateMachine::Inetrface(index, _) => {
                 let peeked = USBStandardDescriptorTypes::from_u8(
-                    self.configs[index].0[self.current + 1] as u8,
+                    self.configs[index].0[self.current + 1],
                 );
                 trace!("peeked std type:{:?}", peeked);
                 peeked
@@ -460,7 +452,7 @@ impl RawDescriptorParser {
             USBDescriptor::Interface(int) => {
                 match &self.metadata {
                     ParserMetaData::UVC(_) => {
-                        self.metadata = ParserMetaData::UVC(int.interface_subclass.clone());
+                        self.metadata = ParserMetaData::UVC(int.interface_subclass);
                     }
                     ParserMetaData::Unknown(ParserMetaDataUnknownSituation::ReferInterface) => {
                         self.metadata = ParserMetaData::determine(
@@ -512,37 +504,31 @@ impl RawDescriptorParser {
 
         loop {
             if let Some(USBStandardDescriptorTypes::Endpoint) = self.peek_std_desc_type() {
-                match self.parse_any_descriptor().unwrap() {
-                    USBDescriptor::Endpoint(endpoint) => {
-                        trace!("parsed endpoint:{:?}", endpoint);
-                        endpoints.push(TopologicalUSBDescriptorEndpoint::Standard(endpoint))
-                    }
-                    _ => {}
+                if let USBDescriptor::Endpoint(endpoint) = self.parse_any_descriptor().unwrap() {
+                    trace!("parsed endpoint:{:?}", endpoint);
+                    endpoints.push(TopologicalUSBDescriptorEndpoint::Standard(endpoint))
                 }
                 continue;
             }
 
-            match self.metadata {
-                ParserMetaData::UVC(_) => {
-                    if let Some(UVCDescriptorTypes::UVCClassSpecVideoControlInterruptEndpoint) =
-                        self.peek_uvc_desc_type()
-                    {
-                        trace!("uvc interrupt endpoint!");
-                        match self.parse_any_descriptor().unwrap() {
-                            USBDescriptor::UVCClassSpecVideoControlInterruptEndpoint(ep) => {
-                                trace!("got {:?}", ep);
-                                endpoints.push(TopologicalUSBDescriptorEndpoint::UNVVideoControlInterruptEndpoint(ep));
-                            }
-                            _ => {
-                                panic!("impossible!");
-                            }
+            if let ParserMetaData::UVC(_) = self.metadata {
+                if let Some(UVCDescriptorTypes::UVCClassSpecVideoControlInterruptEndpoint) =
+                    self.peek_uvc_desc_type()
+                {
+                    trace!("uvc interrupt endpoint!");
+                    match self.parse_any_descriptor().unwrap() {
+                        USBDescriptor::UVCClassSpecVideoControlInterruptEndpoint(ep) => {
+                            trace!("got {:?}", ep);
+                            endpoints.push(TopologicalUSBDescriptorEndpoint::UNVVideoControlInterruptEndpoint(ep));
                         }
-                        continue;
-                    } else {
-                        trace!("not uvc data!");
+                        _ => {
+                            panic!("impossible!");
+                        }
                     }
+                    continue;
+                } else {
+                    trace!("not uvc data!");
                 }
-                _ => {}
             }
 
             break;

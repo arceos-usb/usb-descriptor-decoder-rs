@@ -326,7 +326,7 @@ impl UVCControlInterface {
                 trace!("header!");
                 let _len_array_nr = len - 12;
                 UVCControlInterfaceHeader {
-                    length: len.clone(),
+                    length: len,
                     descriptor_type,
                     descriptor_sub_type,
                     bcd_uvc: u16::from_ne_bytes(raw[3..=4].try_into().unwrap()),

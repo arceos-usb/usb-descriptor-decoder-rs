@@ -68,7 +68,7 @@ impl TopologicalUSBDescriptorRoot {
                     }
                     TopologicalUSBDescriptorFunction::Interface(vec) => {
                         USBFunctionExpressions::Interface(
-                            &vec.get(0)
+                            &vec.first()
                                 .expect(
                                     "atleast 1 interface exist, this device must had some issue!",
                                 )
@@ -82,7 +82,7 @@ impl TopologicalUSBDescriptorRoot {
         }
     }
 
-    pub fn configs<'a>(&'a self) -> Vec<&'a Configuration> {
+    pub fn configs(&self) -> Vec<&Configuration> {
         self.device.child.iter().map(|cfg| &cfg.data).collect()
     }
 }

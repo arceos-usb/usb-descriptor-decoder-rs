@@ -70,8 +70,8 @@ impl Endpoint {
             .as_ref()
             .map(|ssc| {
                 if self.is_bulk_out() {
-                    let raw = ssc.attributes & 0x1F;
-                    raw
+                    
+                    ssc.attributes & 0x1F
                 } else {
                     0
                 }
