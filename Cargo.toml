@@ -3,6 +3,11 @@ name = "usb-descriptor-decoder"
 authors = ["dbydd <dbydd@outlook.com>"]
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A no-std extensible USB Descriptor Decoder, support organize Descriptors as tree structure"
+repository = "https://github.com/dbydd/dynamic_join_array"
+categories = ["usb"]
+keywords = ["usb","no_std","descriptor"]
 
 [dependencies]
 bit_field = "0.10.2"
